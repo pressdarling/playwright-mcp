@@ -14,16 +14,21 @@
  * limitations under the License.
  */
 
+import accessibility from './tools/accessibility.js';
+import advancedWaiting from './tools/advancedWaiting.js';
 import common from './tools/common.js';
 import console from './tools/console.js';
 import dialogs from './tools/dialogs.js';
+import domManipulation from './tools/domManipulation.js';
 import files from './tools/files.js';
+import frameManagement from './tools/frameManagement.js';
 import install from './tools/install.js';
 import javascript from './tools/javascript.js';
 import keyboard from './tools/keyboard.js';
 import navigate from './tools/navigate.js';
 import network from './tools/network.js';
 import networkInterception from './tools/networkInterception.js';
+import pageInformation from './tools/pageInformation.js';
 import pdf from './tools/pdf.js';
 import scriptInjection from './tools/scriptInjection.js';
 import storage from './tools/storage.js';
@@ -37,16 +42,21 @@ import wait from './tools/wait.js';
 import type { Tool } from './tools/tool.js';
 
 export const snapshotTools: Tool<any>[] = [
+  ...accessibility(true),
+  ...advancedWaiting(true),
   ...common(true),
   ...console,
   ...dialogs(true),
+  ...domManipulation(true),
   ...files(true),
+  ...frameManagement(true),
   ...install,
   ...javascript(true),
   ...keyboard(true),
   ...navigate(true),
   ...network,
   ...networkInterception(true),
+  ...pageInformation(true),
   ...pdf,
   ...scriptInjection(true),
   ...screenshot,
@@ -58,16 +68,21 @@ export const snapshotTools: Tool<any>[] = [
 ];
 
 export const visionTools: Tool<any>[] = [
+  ...accessibility(false),
+  ...advancedWaiting(false),
   ...common(false),
   ...console,
   ...dialogs(false),
+  ...domManipulation(false),
   ...files(false),
+  ...frameManagement(false),
   ...install,
   ...javascript(false),
   ...keyboard(false),
   ...navigate(false),
   ...network,
   ...networkInterception(false),
+  ...pageInformation(false),
   ...pdf,
   ...scriptInjection(false),
   ...storage(false),
