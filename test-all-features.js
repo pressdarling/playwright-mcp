@@ -401,6 +401,16 @@ async function testAllFeatures() {
   } catch (error) {
     console.error(`${RED}Fatal error: ${error.message}${RESET}`);
   } finally {
+    // Clean up: Close the tab before closing the client
+    try {
+      await client.callTool({
+        name: 'browser_close',
+        arguments: {}
+      });
+    } catch (e) {
+      // Ignore cleanup errors
+    }
+    
     await client.close();
   }
 }

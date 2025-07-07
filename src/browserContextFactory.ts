@@ -155,6 +155,7 @@ class RemoteContextFactory extends BaseContextFactory {
 class PersistentContextFactory implements BrowserContextFactory {
   readonly browserConfig: FullConfig['browser'];
   private _userDataDirs = new Set<string>();
+  private _contextCache = new Map<string, { browserContext: playwright.BrowserContext, close: () => Promise<void> }>();
 
   constructor(browserConfig: FullConfig['browser']) {
     this.browserConfig = browserConfig;
@@ -164,6 +165,13 @@ class PersistentContextFactory implements BrowserContextFactory {
     await injectCdpPort(this.browserConfig);
     testDebug('create browser context (persistent)');
     const userDataDir = this.browserConfig.userDataDir ?? await this._createUserDataDir();
+
+    // Check if we have a cached context for this user data directory
+    const cached = this._contextCache.get(userDataDir);
+    if (cached && cached.browserContext.browser()?.isConnected()) {
+      testDebug('reusing existing browser context for', userDataDir);
+      return cached;
+    }
 
     this._userDataDirs.add(userDataDir);
     testDebug('lock user data dir', userDataDir);
@@ -178,7 +186,12 @@ class PersistentContextFactory implements BrowserContextFactory {
           handleSIGTERM: false,
         });
         const close = () => this._closeBrowserContext(browserContext, userDataDir);
-        return { browserContext, close };
+        const result = { browserContext, close };
+        
+        // Cache the context for reuse
+        this._contextCache.set(userDataDir, result);
+        
+        return result;
       } catch (error: any) {
         if (error.message.includes('Executable doesn\'t exist'))
           throw new Error(`Browser specified in your config is not installed. Either install it (likely) or change the config.`);
@@ -196,7 +209,16 @@ class PersistentContextFactory implements BrowserContextFactory {
   private async _closeBrowserContext(browserContext: playwright.BrowserContext, userDataDir: string) {
     testDebug('close browser context (persistent)');
     testDebug('release user data dir', userDataDir);
-    await browserContext.close().catch(() => {});
+    
+    // Only remove from cache and close if the browser is disconnected
+    if (!browserContext.browser()?.isConnected()) {
+      this._contextCache.delete(userDataDir);
+      await browserContext.close().catch(() => {});
+    } else {
+      // If keepBrowserOpen is enabled and browser is still connected, 
+      // don't actually close the context, just log it
+      testDebug('keeping browser context open for', userDataDir);
+    }
     this._userDataDirs.delete(userDataDir);
     testDebug('close browser context complete (persistent)');
   }

@@ -28,7 +28,10 @@ import type { BrowserContextFactory } from './browserContextFactory.js';
 
 export function createConnection(config: FullConfig, browserContextFactory: BrowserContextFactory): Connection {
   const allTools = config.vision ? visionTools : snapshotTools;
-  const tools = allTools.filter(tool => !config.capabilities || tool.capability === 'core' || config.capabilities.includes(tool.capability));
+  // Enable all tools by default if no capabilities are specified
+  const tools = config.capabilities && config.capabilities.length > 0 
+    ? allTools.filter(tool => tool.capability === 'core' || config.capabilities!.includes(tool.capability))
+    : allTools; // Use all tools when no capabilities specified
   validateConfig(config);
   const context = new Context(tools, config, browserContextFactory);
   const server = new McpServer({ name: 'Playwright', version: packageJSON.version }, {
@@ -93,6 +96,9 @@ export class Connection {
 
   async close() {
     await this.server.close();
-    await this.context.close();
+    // Only close the context if keepBrowserOpen is not enabled
+    if (!this.context.config.keepBrowserOpen) {
+      await this.context.close();
+    }
   }
 }

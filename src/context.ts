@@ -286,7 +286,7 @@ ${code.join('\n')}
 
     if (this._currentTab === tab)
       this._currentTab = this._tabs[Math.min(index, this._tabs.length - 1)];
-    if (!this._tabs.length)
+    if (!this._tabs.length && !this.config.keepBrowserOpen)
       void this.close();
   }
 

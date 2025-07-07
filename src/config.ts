@@ -59,6 +59,7 @@ export type CLIOptions = {
   viewportSize?: string;
   vision?: boolean;
   extension?: boolean;
+  keepBrowserOpen?: boolean;
 };
 
 const defaultConfig: FullConfig = {
@@ -212,6 +213,7 @@ export async function configFromCLIOptions(cliOptions: CLIOptions): Promise<Conf
     saveTrace: cliOptions.saveTrace,
     outputDir: cliOptions.outputDir,
     imageResponses: cliOptions.imageResponses,
+    keepBrowserOpen: cliOptions.keepBrowserOpen,
   };
 
   return result;
