@@ -25,7 +25,7 @@ import type * as playwright from 'playwright';
 
 const screenshotSchema = z.object({
   raw: z.boolean().optional().describe('Whether to return without compression (in PNG format). Default is false, which returns a JPEG image.'),
-  filename: z.string().optional().describe('File name to save the screenshot to. Defaults to `page-{timestamp}.{png|jpeg}` if not specified.'),
+  filename: z.string().describe('File path to save the screenshot to. Required parameter.'),
   element: z.string().optional().describe('Human-readable element description used to obtain permission to screenshot the element. If not provided, the screenshot will be taken of viewport. If element is provided, ref must be provided too.'),
   ref: z.string().optional().describe('Exact target element reference from the page snapshot. If not provided, the screenshot will be taken of viewport. If ref is provided, element must be provided too.'),
 }).refine(data => {
@@ -49,7 +49,7 @@ const screenshot = defineTool({
     const tab = context.currentTabOrDie();
     const snapshot = tab.snapshotOrDie();
     const fileType = params.raw ? 'png' : 'jpeg';
-    const fileName = await outputFile(context.config, params.filename ?? `page-${new Date().toISOString()}.${fileType}`);
+    const fileName = await outputFile(context.config, params.filename);
     const options: playwright.PageScreenshotOptions = { type: fileType, quality: fileType === 'png' ? undefined : 50, scale: 'css', path: fileName };
     const isElementScreenshot = params.element && params.ref;
 
@@ -64,15 +64,13 @@ const screenshot = defineTool({
     else
       code.push(`await page.screenshot(${javascript.formatObject(options)});`);
 
-    const includeBase64 = context.clientSupportsImages();
     const action = async () => {
-      const screenshot = locator ? await locator.screenshot(options) : await tab.page.screenshot(options);
+      await (locator ? locator.screenshot(options) : tab.page.screenshot(options));
       return {
-        content: includeBase64 ? [{
-          type: 'image' as 'image',
-          data: screenshot.toString('base64'),
-          mimeType: fileType === 'png' ? 'image/png' : 'image/jpeg',
-        }] : []
+        content: [{
+          type: 'text' as 'text',
+          text: `Screenshot saved to: ${fileName}`,
+        }]
       };
     };
 
