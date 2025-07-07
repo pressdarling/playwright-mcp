@@ -16,7 +16,7 @@
 
 import type * as playwright from 'playwright';
 
-export type ToolCapability = 'core' | 'tabs' | 'pdf' | 'history' | 'wait' | 'files' | 'install' | 'testing' | 'javascript' | 'network' | 'storage';
+export type ToolCapability = 'core' | 'tabs' | 'pdf' | 'history' | 'wait' | 'files' | 'install' | 'testing' | 'javascript' | 'network' | 'storage' | 'dom' | 'frames' | 'info' | 'accessibility';
 
 export type Config = {
   /**
@@ -94,6 +94,10 @@ export type Config = {
    *   - 'javascript': JavaScript execution and script injection.
    *   - 'network': Advanced network interception and monitoring.
    *   - 'storage': Storage and cookie management.
+   *   - 'dom': DOM manipulation and querying.
+   *   - 'frames': Frame/iframe management.
+   *   - 'info': Page information retrieval.
+   *   - 'accessibility': Accessibility tree and checks.
    */
   capabilities?: ToolCapability[];
 
