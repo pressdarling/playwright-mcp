@@ -35,6 +35,25 @@ async function testPhase3() {
     await client.connect(transport);
     console.log('Connected to MCP server\n');
     
+    // Check available tools
+    const tools = await client.listTools();
+    const phase3Tools = tools.tools.filter(t => 
+      t.name.includes('query_selector') || 
+      t.name.includes('wait_for_selector') ||
+      t.name.includes('wait_for_function') ||
+      t.name.includes('get_title') ||
+      t.name.includes('get_metrics') ||
+      t.name.includes('list_frames') ||
+      t.name.includes('accessibility')
+    );
+    
+    console.log(`Available Phase 3 tools: ${phase3Tools.length}`);
+    if (phase3Tools.length === 0) {
+      console.log('\n❌ Phase 3 tools not found. Please restart the server with:');
+      console.log('node cli.js --port 8931 --browser chrome --caps "core,javascript,network,storage,dom,frames,wait,info,accessibility"\n');
+      return;
+    }
+    
     // Navigate to a test page with multiple elements
     await client.callTool({
       name: 'browser_navigate',
@@ -249,6 +268,17 @@ async function testPhase3() {
   } catch (error) {
     console.error(`${RED}Fatal error: ${error.message}${RESET}`);
   } finally {
+    // Clean up: Close the tab before closing the client
+    try {
+      await client.callTool({
+        name: 'browser_close',
+        arguments: {}
+      });
+      console.log('\n🧹 Cleaned up browser tab');
+    } catch (e) {
+      // Ignore cleanup errors
+    }
+    
     await client.close();
   }
 }
