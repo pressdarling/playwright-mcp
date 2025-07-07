@@ -19,6 +19,7 @@ import { z } from 'zod';
 import { defineTool } from './tool.js';
 import * as javascript from '../javascript.js';
 import { generateLocator } from './utils.js';
+import { outputFile } from '../config.js';
 
 const snapshot = defineTool({
   capability: 'core',
@@ -26,16 +27,37 @@ const snapshot = defineTool({
     name: 'browser_snapshot',
     title: 'Page snapshot',
     description: 'Capture accessibility snapshot of the current page, this is better than screenshot',
-    inputSchema: z.object({}),
+    inputSchema: z.object({
+      filename: z.string().describe('File path to save the snapshot to. Required parameter.'),
+    }),
     type: 'readOnly',
   },
 
-  handle: async context => {
-    await context.ensureTab();
+  handle: async (context, params) => {
+    const tab = context.currentTabOrDie();
+    const fileName = await outputFile(context.config, params.filename);
+
+    const code = [
+      `// Capture accessibility snapshot and save it as ${fileName}`,
+    ];
+
+    const action = async () => {
+      await tab.captureSnapshot();
+      const snapshot = tab.snapshotOrDie();
+      const fs = await import('fs/promises');
+      await fs.writeFile(fileName, snapshot.text(), 'utf8');
+      return {
+        content: [{
+          type: 'text' as 'text',
+          text: `Snapshot saved to: ${fileName}`,
+        }]
+      };
+    };
 
     return {
-      code: [`// <internal code to capture accessibility snapshot>`],
-      captureSnapshot: true,
+      code,
+      action,
+      captureSnapshot: false,
       waitForNetwork: false,
     };
   },
