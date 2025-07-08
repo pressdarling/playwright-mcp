@@ -46,12 +46,6 @@ const snapshot = defineTool({
       const snapshot = tab.snapshotOrDie();
       const fs = await import('fs/promises');
       await fs.writeFile(fileName, snapshot.text(), 'utf8');
-      return {
-        content: [{
-          type: 'text' as 'text',
-          text: `Snapshot saved to: ${fileName}`,
-        }]
-      };
     };
 
     return {
@@ -59,6 +53,12 @@ const snapshot = defineTool({
       action,
       captureSnapshot: false,
       waitForNetwork: false,
+      resultOverride: {
+        content: [{
+          type: 'text' as 'text',
+          text: `Snapshot saved to: ${fileName}`,
+        }]
+      }
     };
   },
 });
