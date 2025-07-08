@@ -202,8 +202,31 @@ ${code.join('\n')}
         `- Page Title: ${await tab.title()}`
     );
 
-    if (captureSnapshot && tab.hasSnapshot())
-      result.push(tab.snapshotOrDie().text());
+    if (captureSnapshot && tab.hasSnapshot()) {
+      const snapshot = tab.snapshotOrDie().text();
+      
+      // Check snapshot size (rough token estimate: 4 chars = 1 token)
+      const estimatedTokens = snapshot.length / 4;
+      
+      if (estimatedTokens > 5000) { // Threshold for automatic file saving
+        // Save to temp file
+        const fileName = await outputFile(this.config, `snapshot-${Date.now()}.html`);
+        const fs = await import('fs/promises');
+        await fs.writeFile(fileName, snapshot, 'utf8');
+        
+        result.push(
+          '',
+          '### Snapshot saved to file',
+          `The page snapshot was too large (~${Math.round(estimatedTokens).toLocaleString()} tokens) and has been saved to:`,
+          `${fileName}`,
+          '',
+          `Use the browser_snapshot tool to explicitly save snapshots when needed.`
+        );
+      } else {
+        // Small enough to include inline
+        result.push(snapshot);
+      }
+    }
 
     const content = actionResult?.content ?? [];
 

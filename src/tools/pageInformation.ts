@@ -120,7 +120,7 @@ const getHtml: ToolFactory = captureSnapshot => defineTool({
 
     return {
       code,
-      captureSnapshot,
+      captureSnapshot: false, // HTML is already being returned, no need for snapshot
       waitForNetwork: false,
       action: async () => {
         let html: string;

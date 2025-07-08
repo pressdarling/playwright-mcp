@@ -26,6 +26,7 @@ import type * as playwright from 'playwright';
 const screenshotSchema = z.object({
   raw: z.boolean().optional().describe('Whether to return without compression (in PNG format). Default is false, which returns a JPEG image.'),
   filename: z.string().describe('File path to save the screenshot to. Required parameter.'),
+  fullPage: z.boolean().optional().describe('Whether to capture the full scrollable page (default: false, captures only visible viewport).'),
   element: z.string().optional().describe('Human-readable element description used to obtain permission to screenshot the element. If not provided, the screenshot will be taken of viewport. If element is provided, ref must be provided too.'),
   ref: z.string().optional().describe('Exact target element reference from the page snapshot. If not provided, the screenshot will be taken of viewport. If ref is provided, element must be provided too.'),
 }).refine(data => {
@@ -50,11 +51,17 @@ const screenshot = defineTool({
     const snapshot = tab.snapshotOrDie();
     const fileType = params.raw ? 'png' : 'jpeg';
     const fileName = await outputFile(context.config, params.filename);
-    const options: playwright.PageScreenshotOptions = { type: fileType, quality: fileType === 'png' ? undefined : 50, scale: 'css', path: fileName };
+    const options: playwright.PageScreenshotOptions = { 
+      type: fileType, 
+      quality: fileType === 'png' ? undefined : 50, 
+      scale: 'css', 
+      path: fileName,
+      fullPage: params.fullPage ?? false
+    };
     const isElementScreenshot = params.element && params.ref;
 
     const code = [
-      `// Screenshot ${isElementScreenshot ? params.element : 'viewport'} and save it as ${fileName}`,
+      `// Screenshot ${isElementScreenshot ? params.element : params.fullPage ? 'full page' : 'viewport'} and save it as ${fileName}`,
     ];
 
     const locator = params.ref ? snapshot.refLocator({ element: params.element || '', ref: params.ref }) : null;
@@ -66,12 +73,6 @@ const screenshot = defineTool({
 
     const action = async () => {
       await (locator ? locator.screenshot(options) : tab.page.screenshot(options));
-      return {
-        content: [{
-          type: 'text' as 'text',
-          text: `Screenshot saved to: ${fileName}`,
-        }]
-      };
     };
 
     return {
@@ -79,6 +80,12 @@ const screenshot = defineTool({
       action,
       captureSnapshot: true,
       waitForNetwork: false,
+      resultOverride: {
+        content: [{
+          type: 'text' as 'text',
+          text: `Screenshot saved to: ${fileName}`,
+        }]
+      }
     };
   }
 });
