@@ -1,6 +1,8 @@
-## Playwright MCP
+## Playwright MCP (Enhanced Fork)
 
 A Model Context Protocol (MCP) server that provides browser automation capabilities using [Playwright](https://playwright.dev). This server enables LLMs to interact with web pages through structured accessibility snapshots, bypassing the need for screenshots or visually-tuned models.
+
+> **Note**: This is an enhanced fork of the [official Playwright MCP server](https://github.com/microsoft/playwright-mcp) with 40+ additional tools, token optimization, persistent browser support, and specialized e-commerce capabilities.
 
 ### Key Features
 
@@ -156,6 +158,39 @@ Click <code>Save</code>.
 </details>
 
 <details>
+<summary><b>Install in Goose</b></summary>
+
+#### Click the button to install:
+
+[![Install in Goose](https://block.github.io/goose/img/extension-install-dark.svg)](https://block.github.io/goose/extension?cmd=npx&arg=%40playwright%2Fmcp%40latest&id=playwright&name=Playwright&description=Interact%20with%20web%20pages%20through%20structured%20accessibility%20snapshots%20using%20Playwright)
+
+#### Or install manually:
+
+Go to `Advanced settings` -> `Extensions` -> `Add custom extension`. Name to your liking, use type `STDIO`, and set the `command` to `npx @playwright/mcp`. Click "Add Extension".
+</details>
+
+<details>
+<summary><b>Install in Qodo Gen</b></summary>
+
+Open [Qodo Gen](https://docs.qodo.ai/qodo-documentation/qodo-gen) chat panel in VSCode or IntelliJ → Connect more tools → + Add new MCP → Paste the following configuration:
+
+```js
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest"
+      ]
+    }
+  }
+}
+```
+
+Click <code>Save</code>.
+</details>
+
+<details>
 <summary><b>Install in Gemini CLI</b></summary>
 
 Follow the MCP install [guide](https://github.com/google-gemini/gemini-cli/blob/main/docs/tools/mcp-server.md#configure-the-mcp-server-in-settingsjson), use following configuration:
@@ -173,6 +208,93 @@ Follow the MCP install [guide](https://github.com/google-gemini/gemini-cli/blob/
 }
 ```
 </details>
+
+### Running Locally from Source
+
+This fork includes significant enhancements over the upstream Playwright MCP server. To run it locally:
+
+#### Prerequisites
+- Node.js 18 or newer
+- npm
+
+#### Setup and Build
+
+```bash
+# Clone this repository
+git clone https://github.com/AshKash/playwright-mcp.git
+cd playwright-mcp
+
+# Install dependencies
+npm install
+
+# Build the project
+npm run build
+```
+
+#### Running the Server
+
+There are several ways to run the server locally:
+
+**1. Basic server with SSE transport (recommended for development):**
+```bash
+node cli.js --port 8931
+```
+
+**2. With specific browser and options:**
+```bash
+# Headless Chrome with persistent browser
+node cli.js --port 8931 --browser chrome --headless --keep-browser-open
+
+# With vision mode (screenshots instead of accessibility tree)
+node cli.js --port 8931 --vision
+
+# With e-commerce optimizations
+node cli.js --port 8931 --output-dir ./outputs
+```
+
+**3. Using npm script (for browser agent):**
+```bash
+npm run run-server -- --port 9224
+```
+
+#### Connecting to Local Server
+
+Update your MCP client configuration to use the local server:
+
+```js
+{
+  "mcpServers": {
+    "playwright-local": {
+      "url": "http://localhost:8931/sse"
+    }
+  }
+}
+```
+
+#### Fork-Specific Features
+
+This fork adds powerful enhancements:
+
+1. **Token Optimization**: Large snapshots (>5000 tokens) are automatically saved to files
+2. **Persistent Browser**: Use `--keep-browser-open` to maintain browser across connections
+3. **E-commerce Tools**: Specialized extraction for products, filters, and HTML
+4. **40+ New Tools**: Including JavaScript execution, network interception, DOM manipulation, and more
+
+#### Testing the Server
+
+```bash
+# Test basic functionality
+node test-simple.js
+
+# Test persistent browser feature
+node test-keep-browser-open.js
+
+# Test all Phase 1-3 features
+node test-all-features.js
+
+# Run Playwright tests
+npm test
+```
 
 ### Configuration
 
