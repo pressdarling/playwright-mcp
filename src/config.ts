@@ -236,6 +236,31 @@ export async function outputFile(config: FullConfig, name: string): Promise<stri
   return path.join(config.outputDir, fileName);
 }
 
+export async function standardizedOutputFile(url: string, extension: string): Promise<string> {
+  const baseDir = path.join('/tmp', 'playwright-mcp');
+  await fs.promises.mkdir(baseDir, { recursive: true });
+  
+  // Convert URL to a safe filename
+  const urlToFilename = (url: string) => {
+    // Remove protocol
+    let filename = url.replace(/^https?:\/\//, '');
+    // Replace all non-alphanumeric characters with dashes
+    filename = filename.replace(/[^a-zA-Z0-9]/g, '-');
+    // Remove multiple consecutive dashes
+    filename = filename.replace(/-+/g, '-');
+    // Remove leading/trailing dashes
+    filename = filename.replace(/^-+|-+$/g, '');
+    // Limit length
+    if (filename.length > 100) {
+      filename = filename.substring(0, 100);
+    }
+    return filename;
+  };
+  
+  const filename = `${urlToFilename(url)}.${extension}`;
+  return path.join(baseDir, filename);
+}
+
 function pickDefined<T extends object>(obj: T | undefined): Partial<T> {
   return Object.fromEntries(
       Object.entries(obj ?? {}).filter(([_, v]) => v !== undefined)

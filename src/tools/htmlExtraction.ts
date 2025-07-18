@@ -17,7 +17,7 @@
 import { z } from 'zod';
 
 import { defineTool } from './tool.js';
-import { outputFile } from '../config.js';
+import { outputFile, standardizedOutputFile } from '../config.js';
 
 const saveHtmlSchema = z.object({
   filename: z.string().describe('File path to save the HTML to. Required parameter.'),
@@ -37,7 +37,11 @@ const saveHtml = defineTool({
 
   handle: async (context, params) => {
     const tab = context.currentTabOrDie();
-    const fileName = await outputFile(context.config, params.filename);
+    // Use standardized path if filename contains common patterns
+    const useStandardizedPath = params.filename.includes('save') || params.filename.includes('extract') || params.filename.includes('html');
+    const fileName = useStandardizedPath
+      ? await standardizedOutputFile(tab.page.url(), 'html')
+      : await outputFile(context.config, params.filename);
     const selector = params.selector;
     const includeStyles = params.includeStyles ?? false;
 

@@ -18,7 +18,7 @@ import { z } from 'zod';
 import { defineTool } from './tool.js';
 
 import * as javascript from '../javascript.js';
-import { outputFile } from '../config.js';
+import { outputFile, standardizedOutputFile } from '../config.js';
 
 const pdfSchema = z.object({
   filename: z.string().optional().describe('File name to save the pdf to. Defaults to `page-{timestamp}.pdf` if not specified.'),
@@ -37,7 +37,10 @@ const pdf = defineTool({
 
   handle: async (context, params) => {
     const tab = context.currentTabOrDie();
-    const fileName = await outputFile(context.config, params.filename ?? `page-${new Date().toISOString()}.pdf`);
+    // Use standardized path if filename not provided
+    const fileName = params.filename 
+      ? await outputFile(context.config, params.filename)
+      : await standardizedOutputFile(tab.page.url(), 'pdf');
 
     const code = [
       `// Save page as ${fileName}`,

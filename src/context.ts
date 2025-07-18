@@ -20,7 +20,7 @@ import * as playwright from 'playwright';
 import { callOnPageNoTrace, waitForCompletion } from './tools/utils.js';
 import { ManualPromise } from './manualPromise.js';
 import { Tab } from './tab.js';
-import { outputFile } from './config.js';
+import { outputFile, standardizedOutputFile } from './config.js';
 
 import type { ImageContent, TextContent } from '@modelcontextprotocol/sdk/types.js';
 import type { ModalState, Tool, ToolActionResult } from './tools/tool.js';
@@ -209,8 +209,8 @@ ${code.join('\n')}
       const estimatedTokens = snapshot.length / 4;
       
       if (estimatedTokens > 5000) { // Threshold for automatic file saving
-        // Save to temp file
-        const fileName = await outputFile(this.config, `snapshot-${Date.now()}.html`);
+        // Save to temp file using standardized path
+        const fileName = await standardizedOutputFile(tab.page.url(), 'html');
         const fs = await import('fs/promises');
         await fs.writeFile(fileName, snapshot, 'utf8');
         

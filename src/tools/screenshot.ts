@@ -18,7 +18,7 @@ import { z } from 'zod';
 
 import { defineTool } from './tool.js';
 import * as javascript from '../javascript.js';
-import { outputFile } from '../config.js';
+import { outputFile, standardizedOutputFile } from '../config.js';
 import { generateLocator } from './utils.js';
 
 import type * as playwright from 'playwright';
@@ -50,7 +50,11 @@ const screenshot = defineTool({
     const tab = context.currentTabOrDie();
     const snapshot = tab.snapshotOrDie();
     const fileType = params.raw ? 'png' : 'jpeg';
-    const fileName = await outputFile(context.config, params.filename);
+    // Use standardized path if filename matches certain patterns
+    const useStandardizedPath = params.filename.includes('screenshot') || params.filename.includes('capture');
+    const fileName = useStandardizedPath 
+      ? await standardizedOutputFile(tab.page.url(), fileType)
+      : await outputFile(context.config, params.filename);
     const options: playwright.PageScreenshotOptions = { 
       type: fileType, 
       quality: fileType === 'png' ? undefined : 50, 

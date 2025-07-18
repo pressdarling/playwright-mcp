@@ -19,7 +19,7 @@ import { z } from 'zod';
 import { defineTool } from './tool.js';
 import * as javascript from '../javascript.js';
 import { generateLocator } from './utils.js';
-import { outputFile } from '../config.js';
+import { outputFile, standardizedOutputFile } from '../config.js';
 
 const snapshot = defineTool({
   capability: 'core',
@@ -35,7 +35,11 @@ const snapshot = defineTool({
 
   handle: async (context, params) => {
     const tab = context.currentTabOrDie();
-    const fileName = await outputFile(context.config, params.filename);
+    // Use standardized path if filename is not provided or is a default name
+    const useStandardizedPath = !params.filename || params.filename === '-tmp-widget-current-state.html';
+    const fileName = useStandardizedPath 
+      ? await standardizedOutputFile(tab.page.url(), 'html')
+      : await outputFile(context.config, params.filename);
 
     const code = [
       `// Capture accessibility snapshot and save it as ${fileName}`,
