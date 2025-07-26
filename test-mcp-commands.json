@@ -1,0 +1,57 @@
+[
+  {
+    "jsonrpc": "2.0",
+    "method": "tools/call",
+    "params": {
+      "name": "browser_navigate",
+      "arguments": {
+        "url": "http://localhost:8090/demo/warriors"
+      }
+    },
+    "id": 1
+  },
+  {
+    "jsonrpc": "2.0",
+    "method": "tools/call",
+    "params": {
+      "name": "browser_snapshot",
+      "arguments": {
+        "filename": "-tmp-widget-current-state.html"
+      }
+    },
+    "id": 2
+  },
+  {
+    "jsonrpc": "2.0",
+    "method": "tools/call",
+    "params": {
+      "name": "browser_take_screenshot",
+      "arguments": {
+        "filename": "warriors-screenshot.png",
+        "fullPage": true
+      }
+    },
+    "id": 3
+  },
+  {
+    "jsonrpc": "2.0",
+    "method": "tools/call",
+    "params": {
+      "name": "browser_save_html",
+      "arguments": {
+        "filename": "warriors-save.html",
+        "includeStyles": false
+      }
+    },
+    "id": 4
+  },
+  {
+    "jsonrpc": "2.0",
+    "method": "tools/call",
+    "params": {
+      "name": "browser_pdf_save",
+      "arguments": {}
+    },
+    "id": 5
+  }
+]
