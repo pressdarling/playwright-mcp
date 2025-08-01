@@ -339,17 +339,24 @@ For development and testing, you can run the Playwright MCP server locally:
 
 1. **Start the server** in one terminal with debug logging:
    ```bash
+   npm run build && DEBUG=* NODE_ENV=development node cli.js --port 8931 --browser chrome 2>&1 | tee /tmp/playwright.log
+   ```
+   
+   Or if you want the browser to stay open between requests:
+   ```bash
    npm run build && DEBUG=* NODE_ENV=development node cli.js --port 8931 --browser chrome --keep-browser-open 2>&1 | tee /tmp/playwright.log
    ```
 
-2. **Configure Claude Code** to connect to your local server:
+2. **Configure Claude Code (CLI)** to connect to your local server (you need to do this for every project):
    ```bash
    claude mcp add --transport sse playwright http://localhost:8931/sse
    ```
 
 3. **Test the connection** in Claude:
    - Try `/mcp` to verify the server is connected
-   - Ask Claude to open a website using Playwright MCP and analyze the DOM
+   - Ask Claude to open a page and analyze or extract information
+   
+   This local version works much better than the official playwright-mcp for very large pages.
 
 ### Standalone MCP server
 
